@@ -1,0 +1,115 @@
+var ss = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/1wX5oWloDQghibWD0paiu-PtZtI-x4Dt3WnbD8mZdMeo/edit");
+var sheet = ss.getSheetByName("sheet1");
+
+
+function doPost(e) {              
+  var data = JSON.parse(e.postData.contents)
+  var userMsg = data.originalDetectIntentRequest.payload.data.message.text;
+  var values = sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
+
+
+  var found = false;
+
+
+  for(var i = 0; i < values.length; i++) {
+    if(values[i][0] == userMsg) {
+      found = true;
+     
+      var rowNumber = i+2;
+     
+      var Name = sheet.getRange(rowNumber, 2).getValue();
+      var Data1 = sheet.getRange(rowNumber, 3).getValue();
+      var Data2 = sheet.getRange(rowNumber, 4).getValue();
+      var Data3 = sheet.getRange(rowNumber, 5).getValue();
+      var Data4 = sheet.getRange(rowNumber, 6).getValue();
+
+
+      var result = {
+        "fulfillmentMessages": [
+          {
+            "platform": "line",
+            "type": 4,
+            "payload" : {
+              "line":  {  
+                "type": "flex",
+                "altText": "this is a flex message",
+                "contents": {
+                  "type": "bubble",
+                  "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": ":: สินค้า ::",
+                        "weight": "bold",
+                        "align": "center",
+                        "color": "#0000ff"
+                      },
+                      {
+                        "type": "text",
+                        "text":  Name,
+                        "weight": "bold",
+                        "size": "xl",
+                        "align": "center",
+                        "color": "#ff0000"
+                      },
+                      {
+                        "type": "text",
+                        "text": "สี : "+Data1+" ."
+                      },
+                      {
+                        "type": "text",
+                        "text": "ยอดขาย : "+Data2+" ชิ้น"
+                      },
+                      {
+                        "type": "text",
+                        "text": "คงเหลือทั้งหมด : "+Data3+" ชิ้น"
+                      },
+                      {
+                        "type": "text",
+                        "text": "สถานะ : "+Data4,
+                         "size": "xl",
+                        "weight": "bold",
+                        "align": "center",
+                        "color": "#32CD32"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      };
+     
+      var replyJSON = ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+      return replyJSON;
+    }
+  }
+
+
+  if(!found) {
+    var result = {
+      "fulfillmentMessages": [
+        {
+          "platform": "line",
+          "type": 4,
+          "payload" : {
+            "line": {  
+              "type": "text",
+              "text": "ไม่พบข้อมูลในฐานข้อมูล"
+            }
+          }
+        }
+      ]
+    };
+
+
+    var replyJSON = ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+    return replyJSON;
+  }
+}
+
+
+
